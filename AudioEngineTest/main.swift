@@ -1,11 +1,19 @@
-//
-//  main.swift
-//  AudioEngineTest
-//
-//  Created by Christian Tietze on 30.09.23.
-//
+import AVFAudio
+import AppKit
 
-import Foundation
+var exit = false
 
-print("Hello, World!")
+func getInput() {
+    print("> ", terminator: "")
+    
+    switch readLine(strippingNewline: true) {
+    case "q": 
+         exit = true
+    default:
+        NSSound.beep()
+    }
+}
 
+repeat {
+    getInput()
+} while (!exit)
