@@ -8,6 +8,22 @@ let audioQueue = DispatchQueue(label: "audio test queue")
 var captureSession: AVCaptureSession?
 var audioInput: AVCaptureDeviceInput?
 
+var fileOutput: AVCaptureAudioFileOutput?
+let outputFileURL = URL(filePath: "/tmp/audio-engine-test.m4a")
+
+final class CaptureDelegate: NSObject, AVCaptureFileOutputRecordingDelegate {
+    static let shared = CaptureDelegate()
+
+    private override init() { }
+
+    func fileOutput(_ output: AVCaptureFileOutput, didFinishRecordingTo outputFileURL: URL, from connections: [AVCaptureConnection], error: Error?) {
+        print("Did finish recording to", outputFileURL)
+        if let error {
+            print("Error:", error.localizedDescription)
+        }
+    }
+}
+
 func captureDevices() -> [AVCaptureDevice] {
     return AVCaptureDevice.DiscoverySession(
         deviceTypes: [.builtInMicrophone],
@@ -21,7 +37,7 @@ func changeCaptureDevice(to device: AVCaptureDevice) {
         try audioInput = AVCaptureDeviceInput(device: device)
         print("→ Set input device to", device.localizedName)
     } catch {
-        print("Cannot capture input from", device.localizedName, "because", error)
+        print("Cannot capture input from", device.localizedName, "because", error.localizedDescription)
     }
 }
 
@@ -31,7 +47,7 @@ func getInput() {
     let input = readLine(strippingNewline: true)
 
     switch input {
-    case "h":
+    case "h", "?":
         printBanner()
 
     case "q":
@@ -40,7 +56,7 @@ func getInput() {
     case "ls":
         let devices = captureDevices()
         if devices.isEmpty {
-            print("No microphone devices found!")
+            print("No microphones found!")
         } else {
             devices.enumerated().forEach { (offset, device) in
                 print(offset, terminator: "\t")
@@ -58,9 +74,17 @@ func getInput() {
         else { return print("No default input device") }
         changeCaptureDevice(to: defaultDevice)
 
+    case "df":
+        guard fileOutput == nil
+        else { return print("File output already set up") }
+
+        fileOutput = AVCaptureAudioFileOutput()
+
     case "s":
         guard let audioInput 
         else { return print("Set input device first") }
+        guard let fileOutput
+        else { return print("Set file output first") }
 
         let newCaptureSession = AVCaptureSession()
         defer { captureSession = newCaptureSession }
@@ -74,8 +98,13 @@ func getInput() {
         else { return print("Cannot add audio input to new capture session") }
         newCaptureSession.addInput(audioInput)
 
+        guard newCaptureSession.canAddOutput(fileOutput)
+        else { return print("Cannot add file output to session") }
+        newCaptureSession.addOutput(fileOutput)
+
         audioQueue.async {
             newCaptureSession.startRunning()
+            fileOutput.startRecording(to: outputFileURL, outputFileType: .m4a, recordingDelegate: CaptureDelegate.shared)
         }
 
     case "S":
@@ -83,6 +112,7 @@ func getInput() {
         else { return print("Start capture session first") }
 
         audioQueue.async {
+            fileOutput?.stopRecording()
             captureSession.stopRunning()
         }
 
@@ -95,15 +125,16 @@ func printBanner() {
     let separator = "-----------------------------------"
     [
         "Usage:",
-        "\tq\tquit",
-        "\th\tprint this help",
+        "\tq\t\tquit",
+        "\th\t\tprint this help",
         separator,
-        "\tls\tlist devices",
+        "\tls\t\tlist devices",
         "\ti[0--9]\tset input device",
-        "\tdi\tset default input device",
+        "\tdi\t\tset default input device",
+        "\tdf\t\tset default file output (\(outputFileURL.path(percentEncoded: false)))",
         separator,
-        "\ts\tstart capture session",
-        "\tS\tstop capture session",
+        "\ts\t\tstart capture session",
+        "\tS\t\tstop capture session",
     ].forEach { print($0) }
 }
 
