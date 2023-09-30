@@ -3,7 +3,10 @@ import AppKit
 
 var exit = false
 
-var inputDevice: AVCaptureDeviceInput?
+let audioQueue = DispatchQueue(label: "audio test queue")
+
+var captureSession: AVCaptureSession?
+var audioInput: AVCaptureDeviceInput?
 
 func captureDevices() -> [AVCaptureDevice] {
     return AVCaptureDevice.DiscoverySession(
@@ -15,7 +18,7 @@ func captureDevices() -> [AVCaptureDevice] {
 
 func changeCaptureDevice(to device: AVCaptureDevice) {
     do {
-        try inputDevice = AVCaptureDeviceInput(device: device)
+        try audioInput = AVCaptureDeviceInput(device: device)
         print("→ Set input device to", device.localizedName)
     } catch {
         print("Cannot capture input from", device.localizedName, "because", error)
@@ -51,9 +54,37 @@ func getInput() {
         changeCaptureDevice(to: captureDevices()[inputDeviceNumber])
 
     case "di":
-        guard let defaultDevice = AVCaptureDevice.default(.builtInMicrophone, for: .audio, position: .unspecified) 
+        guard let defaultDevice = AVCaptureDevice.default(.builtInMicrophone, for: .audio, position: .unspecified)
         else { return print("No default input device") }
         changeCaptureDevice(to: defaultDevice)
+
+    case "s":
+        guard let audioInput 
+        else { return print("Set input device first") }
+
+        let newCaptureSession = AVCaptureSession()
+        defer { captureSession = newCaptureSession }
+
+        newCaptureSession.beginConfiguration()
+        defer { newCaptureSession.commitConfiguration() }
+
+        newCaptureSession.sessionPreset = .medium
+
+        guard newCaptureSession.canAddInput(audioInput)
+        else { return print("Cannot add audio input to new capture session") }
+        newCaptureSession.addInput(audioInput)
+
+        audioQueue.async {
+            newCaptureSession.startRunning()
+        }
+
+    case "S":
+        guard let captureSession
+        else { return print("Start capture session first") }
+
+        audioQueue.async {
+            captureSession.stopRunning()
+        }
 
     default:
         NSSound.beep()
@@ -61,14 +92,18 @@ func getInput() {
 }
 
 func printBanner() {
+    let separator = "-----------------------------------"
     [
         "Usage:",
         "\tq\tquit",
         "\th\tprint this help",
-        "-----------------------------------",
+        separator,
         "\tls\tlist devices",
         "\ti[0--9]\tset input device",
         "\tdi\tset default input device",
+        separator,
+        "\ts\tstart capture session",
+        "\tS\tstop capture session",
     ].forEach { print($0) }
 }
 
