@@ -13,6 +13,15 @@ func captureDevices() -> [AVCaptureDevice] {
     ).devices
 }
 
+func changeCaptureDevice(to device: AVCaptureDevice) {
+    do {
+        try inputDevice = AVCaptureDeviceInput(device: device)
+        print("→ Set input device to", device.localizedName)
+    } catch {
+        print("Cannot capture input from", device.localizedName, "because", error)
+    }
+}
+
 func getInput() {
     print("> ", terminator: "")
     
@@ -39,23 +48,12 @@ func getInput() {
     case .some(let cmd) where cmd.hasPrefix("i"):
         guard let inputDeviceNumber = Int(cmd.dropFirst(1))
         else { return print("No valid device number: \(cmd)") }
-        let device = captureDevices()[inputDeviceNumber]
-        do {
-            try inputDevice = AVCaptureDeviceInput(device: device)
-            print("→ Set input device to", device.localizedName)
-        } catch {
-            print("Cannot capture input from", device.localizedName, "because", error)
-        }
+        changeCaptureDevice(to: captureDevices()[inputDeviceNumber])
 
     case "di":
         guard let defaultDevice = AVCaptureDevice.default(.builtInMicrophone, for: .audio, position: .unspecified) 
         else { return print("No default input device") }
-        do {
-            try inputDevice = AVCaptureDeviceInput(device: defaultDevice)
-            print("→ Set input device to", defaultDevice.localizedName)
-        } catch {
-            print("Cannot capture input from", defaultDevice.localizedName, "because", error)
-        }
+        changeCaptureDevice(to: defaultDevice)
 
     default:
         NSSound.beep()
