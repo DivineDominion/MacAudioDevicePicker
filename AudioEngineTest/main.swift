@@ -1,9 +1,15 @@
-import AVFAudio
+import AVFoundation
 import AppKit
 
 var exit = false
 
-let engine = AVAudioEngine()
+func captureDevices() -> [AVCaptureDevice] {
+    return AVCaptureDevice.DiscoverySession(
+        deviceTypes: [.builtInMicrophone],
+        mediaType: .audio,
+        position: .unspecified
+    ).devices
+}
 
 func getInput() {
     print("> ", terminator: "")
@@ -15,21 +21,16 @@ func getInput() {
     case "q":
         exit = true
 
-    case "i":
-        [
-            engine.inputNode.description,
-            engine.outputNode.description,
-        ].forEach { print($0) }
-
-    case "s":
-        do {
-            try engine.start()
-        } catch {
-            print("Failed to start engine:\n", error)
+    case "ls":
+        let devices = captureDevices()
+        if devices.isEmpty {
+            print("No microphone devices found!")
+        } else {
+            devices.enumerated().forEach { (offset, device) in
+                print(device.localizedName, !device.isConnected ? "(DISCONNECTED)" : "")
+            }
         }
 
-    case "S":
-        engine.stop()
 
     default:
         NSSound.beep()
@@ -42,9 +43,7 @@ func printBanner() {
         "\tq\tquit",
         "\th\tprint this help",
         "-----------------------------------",
-        "\ti\tinfo about current setup",
-        "\ts\tstart audio engine",
-        "\tS\tstop audio engine",
+        "\tls\tlist devices",
     ].forEach { print($0) }
 }
 
