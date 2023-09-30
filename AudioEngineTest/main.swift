@@ -116,12 +116,28 @@ func getInput() {
             captureSession.stopRunning()
         }
 
+    case "rm":
+        guard FileManager.default.fileExists(atPath: outputFileURL.path(percentEncoded: false))
+        else { return print("File does not exist") }
+        do {
+            try FileManager.default.removeItem(at: outputFileURL)
+            print("File removed at", outputFileURL)
+        } catch {
+            print("Could not remove file at", outputFileURL, "because:", error.localizedDescription)
+        }
+
+    case "o":
+        guard FileManager.default.fileExists(atPath: outputFileURL.path(percentEncoded: false))
+        else { return print("File does not exist") }
+        NSWorkspace.shared.open(outputFileURL)
+
     default:
         NSSound.beep()
     }
 }
 
 func printBanner() {
+    let outputPath = outputFileURL.path(percentEncoded: false)
     let separator = "-----------------------------------"
     [
         "Usage:",
@@ -131,10 +147,12 @@ func printBanner() {
         "\tls\t\tlist devices",
         "\ti[0--9]\tset input device",
         "\tdi\t\tset default input device",
-        "\tdf\t\tset default file output (\(outputFileURL.path(percentEncoded: false)))",
+        "\tdf\t\tset default file output (\(outputPath))",
         separator,
         "\ts\t\tstart capture session",
         "\tS\t\tstop capture session",
+        "\trm\t\tremove file output (\(outputPath))",
+        "\to\t\topen file output (\(outputPath))"
     ].forEach { print($0) }
 }
 
