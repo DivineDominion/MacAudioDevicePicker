@@ -25,6 +25,7 @@
 /* Begin PBXFileReference section */
 		501873E52AC806AA004B1E43 /* AudioEngineTest */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = AudioEngineTest; sourceTree = BUILT_PRODUCTS_DIR; };
 		501873E82AC806AA004B1E43 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
+		501873EF2AC80A78004B1E43 /* AudioEngineTest.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AudioEngineTest.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -57,6 +58,7 @@
 		501873E72AC806AA004B1E43 /* AudioEngineTest */ = {
 			isa = PBXGroup;
 			children = (
+				501873EF2AC80A78004B1E43 /* AudioEngineTest.entitlements */,
 				501873E82AC806AA004B1E43 /* main.swift */,
 			);
 			path = AudioEngineTest;
@@ -248,6 +250,7 @@
 		501873ED2AC806AA004B1E43 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = AudioEngineTest/AudioEngineTest.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = FRMDA3XRGC;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -259,6 +262,7 @@
 		501873EE2AC806AA004B1E43 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = AudioEngineTest/AudioEngineTest.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = FRMDA3XRGC;
 				ENABLE_HARDENED_RUNTIME = YES;
